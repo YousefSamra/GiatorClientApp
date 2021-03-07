@@ -27,6 +27,7 @@ import 'viewServices.dart';
 import 'DoctorData.dart';
 import 'doctorWorkingDays.dart';
 import 'genders.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class API {
   static const String _BASE_URL = 'https://giatro.my/';
@@ -79,6 +80,51 @@ class API {
       return loginStatus; // Post.fromJson(json.decode(postFuture.body));
     } else {
       return loginStatus;
+    }
+  }
+
+  //---------------------------------------------------------------------------
+
+  static doLoginFacebook() async {
+// Create an instance of FacebookLogin
+
+//    final result = await facebookLogin.logIn(['email']);
+//    final token = result.accessToken.token;
+//    final graphResponse = await  get(
+//        'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${token}');
+//    final profile = json.decode(graphResponse.body);
+
+    try {
+      // by default the login method has the next permissions ['email','public_profile']
+      AccessToken accessToken = await FacebookAuth.instance.login();
+      print(accessToken.toJson());
+      final token = accessToken.token;
+      final graphResponse = await get(
+          'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${token}');
+      final profile = json.decode(graphResponse.body);
+      // get the user data
+      final userData = await FacebookAuth.instance.getUserData();
+      print("userData: ${profile}");
+      print("name: ${profile["name"]}");
+      print("email: ${profile["email"]}");
+//      user.name = profile["name"];
+//      user.email = profile["email"];
+//      _firebaseMessaging = FirebaseMessaging();
+//      user.deviceToken = await _firebaseMessaging.getToken();
+      return Future.value(profile);
+    } on FacebookAuthException catch (e) {
+      switch (e.errorCode) {
+        case FacebookAuthErrorCode.OPERATION_IN_PROGRESS:
+          print("You have a previous login operation in progress");
+          break;
+        case FacebookAuthErrorCode.CANCELLED:
+          print("login cancelled");
+          break;
+        case FacebookAuthErrorCode.FAILED:
+          print("login failed");
+          break;
+      }
+      return Future.value(null);
     }
   }
 

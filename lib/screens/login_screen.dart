@@ -43,7 +43,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   image: 'assets/images/facebook.png',
                   text: 'Connect with Facebook',
                   color: Color(0xff3B5999),
-                  onPressed: () {},
+                  onPressed: () {
+                    API.doLoginFacebook();
+                  },
                 ),
                 BtnSocial(
                   image: 'assets/images/twitter.png',
@@ -227,4 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
+//  FirebaseMessaging _firebaseMessaging;
+
 }
