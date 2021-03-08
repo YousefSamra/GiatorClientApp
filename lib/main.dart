@@ -85,8 +85,16 @@ class _MyAppState extends State<MyApp> {
 
     String email = prefs.getString("username");
     String password = prefs.getString("userpass");
-    String userToken = prefs.getString("usertoken");
+    String userToken = await prefs.getString("usertoken");
+    print("userToken :: $userToken");
 
+    if (userToken != null) {
+      AppProvider.userToken = userToken;
+      newLogin = false;
+      loading = false;
+      setState(() {});
+      return;
+    }
     if (email == null && password == null) {
       newLogin = true;
       loading = false;
@@ -122,7 +130,7 @@ class _MyAppState extends State<MyApp> {
         ),
       ],
       child: MaterialApp(
-        title: 'Giatroo',
+        title: 'Giatro',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           scaffoldBackgroundColor: Colors.white,

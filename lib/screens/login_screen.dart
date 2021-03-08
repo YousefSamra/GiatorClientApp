@@ -44,7 +44,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   text: 'Connect with Facebook',
                   color: Color(0xff3B5999),
                   onPressed: () {
-                    API.doLoginFacebook();
+                    API.doLoginFacebook().then((value) {
+                      if (value) {
+                        print('login successed');
+                        Navigator.pushReplacementNamed(
+                            context, HomeScreen.routeName);
+                      } else
+                        print('login failed');
+                    });
                   },
                 ),
                 BtnSocial(
@@ -57,7 +64,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   image: 'assets/images/google.png',
                   text: 'Connect with Google',
                   color: Color(0xffD0422A),
-                  onPressed: () {},
+                  onPressed: () {
+                    API.loginWithGoogle().then((value) {
+                      if (value) {
+                        print('login successed');
+                        Navigator.pushReplacementNamed(
+                            context, HomeScreen.routeName);
+                      } else
+                        print('login failed');
+                    });
+                  },
                 ),
                 SizedBox(height: 8),
                 Text(

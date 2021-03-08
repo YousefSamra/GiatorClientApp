@@ -26,17 +26,16 @@ class _EditProfileState extends State<EditProfile> {
   @override
   void initState() {
     super.initState();
-    userInfo  = AppProvider.userInfo ;
-    print(userInfo.firstName ?? 'no data ' ) ;
-    firstName = userInfo.firstName ;
-    lastName = userInfo.lastName ;
-    _textEditingController.text = userInfo.birthDate ;
-    _radioValue = userInfo.genderId -1 ;
+    userInfo = AppProvider.userInfo;
+    print(userInfo.firstName ?? 'no data ');
+    firstName = userInfo.firstName;
+    lastName = userInfo.lastName;
+    _textEditingController.text = userInfo.birthDate;
+    _radioValue = userInfo.genderId ?? 0 - 1;
     print(_radioValue.toString());
     phoneNumber = userInfo.mobile;
     print(phoneNumber);
   }
-
 
   void _handleRadioValueChange(int value) {
     setState(() {
@@ -64,7 +63,7 @@ class _EditProfileState extends State<EditProfile> {
           slivers: [
             SliverToBoxAdapter(
               child: Form(
-                key: EditProfile._registerScreenFormKey ,
+                key: EditProfile._registerScreenFormKey,
                 child: Align(
                   alignment: Alignment.topCenter,
                   child: Container(
@@ -104,15 +103,15 @@ class _EditProfileState extends State<EditProfile> {
                             keyboardType: TextInputType.text,
                             onSaved: (newValue) {
                               setState(() {
-                                firstName = newValue ??userInfo.firstName;
+                                firstName = newValue ?? userInfo.firstName;
                               });
                             },
                             onChanged: (value) {
                               setState(() {
-                                firstName = value ??userInfo.firstName;
+                                firstName = value ?? userInfo.firstName;
                               });
                             },
-                            initialValue: userInfo.firstName ,
+                            initialValue: userInfo.firstName,
                           ),
                           SizedBox(height: 8),
                           TextFormField(
@@ -129,15 +128,15 @@ class _EditProfileState extends State<EditProfile> {
                             keyboardType: TextInputType.text,
                             onSaved: (newValue) {
                               setState(() {
-                                lastName = newValue  ??userInfo.lastName;
+                                lastName = newValue ?? userInfo.lastName;
                               });
                             },
                             onChanged: (value) {
                               setState(() {
-                                lastName = value  ??userInfo.lastName;
+                                lastName = value ?? userInfo.lastName;
                               });
                             },
-                            initialValue: userInfo.lastName ,
+                            initialValue: userInfo.lastName,
                           ),
                           SizedBox(height: 16),
                           IntlPhoneField(
@@ -153,33 +152,30 @@ class _EditProfileState extends State<EditProfile> {
                             initialCountryCode: 'PS',
                             onSaved: (newValue) {
                               setState(() {
-                                phoneNumber = newValue.completeNumber ?? userInfo.mobile ;
+                                phoneNumber =
+                                    newValue.completeNumber ?? userInfo.mobile;
                               });
                             },
-
                             onChanged: (phone) {
                               setState(() {
-                                phoneNumber = phone.number?? userInfo.mobile ;
+                                phoneNumber = phone.number ?? userInfo.mobile;
                               });
                               print(phone.countryCode);
-
                             },
                             initialValue: userInfo.mobile,
                           ),
                           SizedBox(height: 16),
                           TextFormField(
-                            initialValue: userInfo.email ??'name@domain.com',
+                            initialValue: userInfo.email ?? 'name@domain.com',
                             cursorColor: Theme.of(context).primaryColor,
-                            readOnly: true ,
+                            readOnly: true,
                             decoration: InputDecoration(
                               prefixIcon: Icon(
                                 Icons.email_outlined,
-
                                 color: Colors.grey[400],
                               ),
                               hintText: 'Email Address',
                               hintStyle: TextStyle(color: Colors.grey),
-
                             ),
                             keyboardType: TextInputType.emailAddress,
                             onSaved: (newValue) {
@@ -189,15 +185,13 @@ class _EditProfileState extends State<EditProfile> {
                             },
                             onChanged: (value) {
                               setState(() {
-                                emailAddress = value ??userInfo.email;
+                                emailAddress = value ?? userInfo.email;
                               });
                             },
-
                           ),
                           SizedBox(height: 16),
-
                           TextFormField(
-                           // initialValue: _selectedDate.toString() ,
+                            // initialValue: _selectedDate.toString() ,
                             focusNode: AlwaysDisabledFocusNode(),
                             controller: _textEditingController,
                             onTap: () => _selectDate(context),
@@ -283,31 +277,30 @@ class _EditProfileState extends State<EditProfile> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: FlatButton(
                         onPressed: () {
-
-                          if(EditProfile._registerScreenFormKey.currentState.validate())
-                            {
-                              API.updatePatient(firstName, lastName, phoneNumber, emailAddress, _radioValue+1,
-                                  _textEditingController.text).then((value) {
-                                    if(value == 201)
-                                      {
-                                        print('Data has been saved successfully ');
-                                        Navigator.pop(context);
-                                        setState(() {
-                                          AppProvider.getUserInfo() ;
-                                        });
-                                      }
-                                    else
-                                      {
-                                        print('Data has been failed ');
-                                        Navigator.pop(context);
-                                        setState(() {
-
-                                        });
-                                      }
-
-                              }) ;
-
-                            }
+                          if (EditProfile._registerScreenFormKey.currentState
+                              .validate()) {
+                            API
+                                .updatePatient(
+                                    firstName,
+                                    lastName,
+                                    phoneNumber,
+                                    emailAddress,
+                                    _radioValue + 1,
+                                    _textEditingController.text)
+                                .then((value) {
+                              if (value == 201) {
+                                print('Data has been saved successfully ');
+                                Navigator.pop(context);
+                                setState(() {
+                                  AppProvider.getUserInfo();
+                                });
+                              } else {
+                                print('Data has been failed ');
+                                Navigator.pop(context);
+                                setState(() {});
+                              }
+                            });
+                          }
                         },
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5)),

@@ -27,7 +27,12 @@ import 'viewServices.dart';
 import 'DoctorData.dart';
 import 'doctorWorkingDays.dart';
 import 'genders.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebaseAuth;
+
+FirebaseMessaging _firebaseMessaging;
 
 class API {
   static const String _BASE_URL = 'https://giatro.my/';
@@ -51,6 +56,14 @@ class API {
     prefs.setString("userpass", value.password ?? userPass);
     prefs.setString("usertoken", value.accessToken);
     AppProvider.userToken = value.accessToken;
+
+    return true;
+  }
+
+  static Future<bool> setUserTokenSocial(var accessToken) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("usertoken", accessToken);
+    AppProvider.userToken = accessToken;
 
     return true;
   }
@@ -85,46 +98,128 @@ class API {
 
   //---------------------------------------------------------------------------
 
-  static doLoginFacebook() async {
-// Create an instance of FacebookLogin
-
-//    final result = await facebookLogin.logIn(['email']);
-//    final token = result.accessToken.token;
-//    final graphResponse = await  get(
-//        'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${token}');
-//    final profile = json.decode(graphResponse.body);
-
+  static Future<bool> loginWithGoogle() async {
+    bool loginStatus = false;
     try {
-      // by default the login method has the next permissions ['email','public_profile']
-      AccessToken accessToken = await FacebookAuth.instance.login();
-      print(accessToken.toJson());
-      final token = accessToken.token;
-      final graphResponse = await get(
-          'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${token}');
-      final profile = json.decode(graphResponse.body);
-      // get the user data
-      final userData = await FacebookAuth.instance.getUserData();
-      print("userData: ${profile}");
-      print("name: ${profile["name"]}");
-      print("email: ${profile["email"]}");
-//      user.name = profile["name"];
-//      user.email = profile["email"];
-//      _firebaseMessaging = FirebaseMessaging();
-//      user.deviceToken = await _firebaseMessaging.getToken();
-      return Future.value(profile);
-    } on FacebookAuthException catch (e) {
-      switch (e.errorCode) {
-        case FacebookAuthErrorCode.OPERATION_IN_PROGRESS:
-          print("You have a previous login operation in progress");
-          break;
-        case FacebookAuthErrorCode.CANCELLED:
-          print("login cancelled");
-          break;
-        case FacebookAuthErrorCode.FAILED:
-          print("login failed");
-          break;
+      GoogleSignIn googleSignIn = GoogleSignIn();
+
+      GoogleSignInAccount account = await googleSignIn.signIn();
+
+      if (account == null) return false;
+
+//      String IdToken = (await account.authentication).idToken;
+      String account_id = await account.id;
+      String email = await account.email;
+      String name = await account.displayName;
+      String imageUrl = await account.photoUrl;
+
+      _firebaseMessaging = FirebaseMessaging();
+      String deviceToken = await _firebaseMessaging.getToken();
+      var response = await createNewPatientSocial(name, name, 0,
+          email ?? "a@a.com", "google", account_id, deviceToken, imageUrl);
+
+      print("response.body:: ${response.body}");
+      if (response.statusCode == 201) {
+        var mydata = jsonDecode(response.body);
+        loginStatus = true;
+        await setUserTokenSocial(mydata["data"]["access_token"]);
+//          print(response.body);
+        return loginStatus; // Post.fromJson(json.decode(postFuture.body));
+      } else {
+        return loginStatus;
       }
-      return Future.value(null);
+    } catch (e) {
+      print(e.message);
+      print("Error logging with google");
+      return false;
+    }
+  }
+
+  static Future<bool> doLoginFacebook() async {
+// Create an instance of FacebookLogin
+    bool loginStatus = false;
+    final fb = FacebookLogin();
+
+    final res = await fb.logIn(permissions: [
+      FacebookPermission.publicProfile,
+      FacebookPermission.email,
+    ]);
+
+    switch (res.status) {
+      case FacebookLoginStatus.success:
+        _firebaseMessaging = FirebaseMessaging();
+        String deviceToken = await _firebaseMessaging.getToken();
+
+//        final FacebookAccessToken accessToken = res.accessToken;
+
+        final profile = await fb.getUserProfile();
+        final imageUrl = await fb.getProfileImageUrl(width: 100);
+
+        final email = await fb.getUserEmail();
+
+        if (email != null) print('And your email is $email');
+
+        var response = await createNewPatientSocial(
+            profile.firstName,
+            profile.lastName,
+            0,
+            email ?? "a@a.com",
+            "facebook",
+            profile.userId,
+            deviceToken,
+            imageUrl);
+        print("response.body:: ${response.body}");
+        if (response.statusCode == 201) {
+          var mydata = jsonDecode(response.body);
+          loginStatus = true;
+          await setUserTokenSocial(mydata["data"]["access_token"]);
+//          print(response.body);
+          return loginStatus; // Post.fromJson(json.decode(postFuture.body));
+        } else {
+          return loginStatus;
+        }
+
+        break;
+      case FacebookLoginStatus.cancel:
+        // User cancel log in
+        break;
+      case FacebookLoginStatus.error:
+        // Log in failed
+        print('Error while log in: ${res.error}');
+        break;
+    }
+
+    return loginStatus;
+  }
+
+  //----------------------------------------------------------------------------
+
+  static Future<Response> createNewPatientSocial(firstname, lastname, mobile,
+      email, provider, provider_id, device_token, imageUrl) async {
+    Response response = await post(_BASE_URL + 'api/v1/userSocialApi',
+        headers: {
+          HttpHeaders.acceptHeader: "application/json",
+          HttpHeaders.contentTypeHeader: "application/json",
+        },
+        body: jsonEncode(<String, dynamic>{
+          "scope": "*",
+          "name": firstname,
+          "last_name": lastname,
+          "mobile": mobile,
+          "email": email,
+          "gender_id": null,
+          "birthdate": null,
+          "device_token": device_token,
+          "provider_id": provider_id,
+          "provider": provider,
+          "avatar": imageUrl,
+        }));
+
+    if (response.statusCode == 201) {
+      print(response.body);
+      return response; // Post.fromJson(json.decode(postFuture.body));
+    } else {
+      return response;
     }
   }
 
@@ -211,6 +306,7 @@ class API {
 
   /// --------------------------------------------------------------------------
   static Future<int> logout() async {
+    print("AppProvider.userToken: ${AppProvider.userToken}");
     Response response = await post(_BASE_URL + 'api/v1/logoutApi',
         headers: {
           HttpHeaders.authorizationHeader: "Bearer " + AppProvider.userToken,
