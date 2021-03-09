@@ -45,6 +45,15 @@
 	<key>CFBundleURLTypes</key>
     <array>
 
+<dict>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+			<string>com.googleusercontent.apps.209481428589-j0002fc8en3jkb1kv0t2vm47echrubkk</string>
+		</array>
+	</dict>
+
         <dict>
             <key>CFBundleURLSchemes</key>
             <array>
