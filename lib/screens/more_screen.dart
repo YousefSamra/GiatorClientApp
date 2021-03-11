@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:giatroo/Models/API.dart';
 import 'package:giatroo/Models/AppProvider.dart';
@@ -80,8 +82,14 @@ class MoreScreen extends StatelessWidget {
           ),
           Divider(),
           ListTile(
-            onTap: () {
-              launch('https://www.facebook.com/Giatro-103795768440498/');
+            onTap: () async {
+              var user = Platform.isIOS ? "user-thread" : "user";
+              if (await canLaunch("fb-messenger://${user}/103795768440498/")) {
+                launch("fb-messenger://${user}/103795768440498/");
+              } else {
+                launch("https://www.messenger.com/t/103795768440498/");
+              }
+//              launch('https://www.facebook.com/Giatro-103795768440498/');
             },
             leading: Image.asset(
               'assets/images/facebook.png',
