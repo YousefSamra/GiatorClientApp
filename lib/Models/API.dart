@@ -68,6 +68,29 @@ class API {
     return true;
   }
 
+  //=============================================================================
+
+  //===========================================================================
+
+  static Future<bool> showSocialButtons() async {
+    Response response = await get('${_BASE_URL}api/v1/showSocialButtons',
+        headers: {HttpHeaders.acceptHeader: "application/json"});
+    print(response.body);
+    if (response.statusCode == 200) {
+      print(response.body);
+      var mydata = response.body;
+      if (mydata == "1") {
+        return true;
+      } else {
+        return false;
+      }
+      //
+    } else {
+      return false;
+      throw Exception('Cannot Load  the data ');
+    }
+  }
+
   //----------------------------------------------------------------------------
   static Future<bool> userLogin(userEmail, userPass) async {
     Response response = await post(_BASE_URL + 'oauth/token',

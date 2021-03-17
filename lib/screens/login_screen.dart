@@ -18,6 +18,17 @@ class _LoginScreenState extends State<LoginScreen> {
   String username;
   String password;
   GlobalKey<FormState> _loginScreenFormKey = GlobalKey<FormState>();
+  bool showSocialButton = false;
+  @override
+  void initState() {
+    super.initState();
+    API.showSocialButtons().then((value) {
+      setState(() {
+        showSocialButton = value;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -39,50 +50,51 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Image.asset('assets/images/logo2.png'),
                 ),
                 SizedBox(height: 8),
-                BtnSocial(
-                  image: 'assets/images/facebook.png',
-                  text: 'Connect with Facebook',
-                  color: Color(0xff3B5999),
-                  onPressed: () {
-                    API.doLoginFacebook().then((value) {
-                      if (value) {
-                        print('login successed');
-                        Navigator.pushReplacementNamed(
-                            context, HomeScreen.routeName);
-                      } else
-                        print('login failed');
-                    });
-                  },
+                Visibility(
+                  visible: showSocialButton,
+                  child: BtnSocial(
+                    image: 'assets/images/facebook.png',
+                    text: 'Connect with Facebook',
+                    color: Color(0xff3B5999),
+                    onPressed: () {
+                      API.doLoginFacebook().then((value) {
+                        if (value) {
+                          print('login successed');
+                          Navigator.pushReplacementNamed(
+                              context, HomeScreen.routeName);
+                        } else
+                          print('login failed');
+                      });
+                    },
+                  ),
                 ),
-                BtnSocial(
-                  image: 'assets/images/twitter.png',
-                  text: 'Connect with Twitter',
-                  color: Color(0xff26A6D1),
-                  onPressed: () {},
-                ),
-                BtnSocial(
-                  image: 'assets/images/google.png',
-                  text: 'Connect with Google',
-                  color: Color(0xffD0422A),
-                  onPressed: () {
-                    API.loginWithGoogle().then((value) {
-                      if (value) {
-                        print('login successed');
-                        Navigator.pushReplacementNamed(
-                            context, HomeScreen.routeName);
-                      } else
-                        print('login failed');
-                    });
-                  },
+                Visibility(
+                  visible: showSocialButton,
+                  child: BtnSocial(
+                    image: 'assets/images/google.png',
+                    text: 'Connect with Google',
+                    color: Color(0xffD0422A),
+                    onPressed: () {
+                      API.loginWithGoogle().then((value) {
+                        if (value) {
+                          print('login successed');
+                          Navigator.pushReplacementNamed(
+                              context, HomeScreen.routeName);
+                        } else
+                          print('login failed');
+                      });
+                    },
+                  ),
                 ),
                 SizedBox(height: 8),
-                Text(
-                  'Or',
-                  style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700),
-                ),
+                if (showSocialButton)
+                  Text(
+                    'Or',
+                    style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700),
+                  ),
                 SizedBox(height: 8),
                 SizedBox(
                   width: size.width * 0.7,
